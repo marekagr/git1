@@ -1,4 +1,4 @@
-const day=25
+const day=29
 const today=new Date();
 today.setMinutes ( new Date ().getMinutes() + 5 );
 const hour=('0'+today.getHours()).slice(-2);
@@ -6,6 +6,9 @@ const minute=('0'+today.getMinutes()).slice(-2);
 var path=''
 var keys=''
 var clickAmount=0
+var vaccineTerm="Johnson&Johnson"
+var doseFilter=0;
+var vaccineFilter=3
 
 
 async function callFuncKeys() {
@@ -38,17 +41,17 @@ describe('My login application', ()=>{
         browser.setWindowSize(1200,960)
         browser.url('https://pwdl.erejestracja.ezdrowie.gov.pl/punkty-szczepien')
         let peselH=Array( 
-           ['70042602238',0,3]
+           ['70042602238',0,3],
+        //    ['70042602238',0,3]
 
             )
         let pesel=Array( 
-
-          
-            
+            ['70042602238',0,3],
+            // ['70042602238',0,3]                   
             )
 
 
-        //#region login
+//#region login
         // browser.debug()
 
         // const button1 = $('button=Zaloguj się')
@@ -68,14 +71,14 @@ describe('My login application', ()=>{
         const inputPass =await $('[name="loginForm:hasło"]')    
         const inputZaloguj =await $('input[value="Zaloguj się"]')    
 
-        await inputLogin.setValue('ewamlasota')
-        await inputPass.setValue('EwaM12!@')
+        await inputLogin.setValue('')
+        await inputPass.setValue('')
         // await inputLogin.setValue('barbarazwiackowska')
         // await inputPass.setValue('Barbara12!@')
         await inputZaloguj.click()    
         //#endregion
 
-        //#region datepicker and filters
+//#region datepicker and filters
         const grafikTd=await $('//table//td[last()]')
         await grafikTd.click() 
         
@@ -99,29 +102,51 @@ describe('My login application', ()=>{
         await datepickerDay.click()
         await browser.pause(1000)
 
+        //dawka dose
+        // const filters1=await $('//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][1]//div[contains(@class,"react-select__indicators")]')
+        // await filters1.click()
+        // await browser.keys(['\uE007'])  //1 dose
+        // // await browser.keys(['\uE015','\uE007'])  //2 dose
+        // await browser.pause(500)
+
+        //dawka
+        path='//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][1]//div[contains(@class,"react-select__indicators")]'
+        clickAmount=doseFilter
+        await browser.call(callFuncKeysSelect)
+
+
+        //vaccine
+//         const filters2=await $('//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][2]//div[contains(@class,"react-select__indicators")]')
+//         await filters2.click()
+//    //     await browser.keys(['\uE007']) //pfizer
+//         //await browser.keys(['\uE015','\uE007']) //moderna
+//     //    await browser.keys(['\uE015','\uE015','\uE007']) //astra
+//         await browser.keys(['\uE015','\uE015','\uE015','\uE007']) //johnson
+//         await browser.pause(500)
+
+        //vaccine
+        path='//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][2]//div[contains(@class,"react-select__indicators")]'
+        clickAmount=vaccineFilter
+        await browser.call(callFuncKeysSelect)
         
-        const filters1=await $('//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][1]//div[contains(@class,"react-select__indicators")]')
-        await filters1.click()
-        await browser.keys(['\uE015','\uE007'])  
-        await browser.pause(500)
 
-        const filters2=await $('//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][2]//div[contains(@class,"react-select__indicators")]')
-        await filters2.click()
-         await browser.keys(['\uE007']) //pfizer
-        //await browser.keys(['\uE015','\uE007']) //moderna
-    //    await browser.keys(['\uE015','\uE015','\uE007']) //astra
-        await browser.pause(500)
+        // //status
+        // const filters5=await $('//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][5]//div[contains(@class,"react-select__indicators")]')
+        // await filters5.click()
+        // await browser.keys(['\uE007']) 
+        // // await filters.click()
+        // await browser.pause(1000)    
 
-        const filters5=await $('//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][5]//div[contains(@class,"react-select__indicators")]')
-        await filters5.click()
-        await browser.keys(['\uE007']) 
-        // await filters.click()
-        await browser.pause(1000)    
+        // status
+        path='//div[contains(@class,"MuiGrid-container")]/div[contains(@class,"MuiGrid-item")][5]//div[contains(@class,"react-select__indicators")]'
+        clickAmount=0
+        await browser.call(callFuncKeysSelect)
+
 //#endregion
 
 
 
-
+//#region add terms loop
         for await (const item of peselH) {
             
             // const output=await browser.call(()=>{
@@ -152,15 +177,29 @@ describe('My login application', ()=>{
             path='//form[contains(@class,"add-slot-form")]//div[contains(@class,"MuiGrid-item")][5]//div[contains(@class,"react-select__indicators")]'
             clickAmount=item[2]
             await browser.call(callFuncKeysSelect)
+
+            const buttonZapiszTermin=await $('//form[contains(@class,"add-slot-form")]/div[contains(@class,"action-buttons")]/button[contains(text(),"Zapisz termin")]')
+            await buttonZapiszTermin.click()
+            browser.pause(1000)   
         
+            const buttonTak=await $('//button[contains(text(),"Tak")]')
+            // if(await buttonTak.isExisting()){
+                 await buttonTak.click()
+                 await browser.pause(2500)
+            // }
+
             await browser.pause(1000)
         }
+//#endregion        
 
+
+//#region 
         for await (const item of pesel) {
-             const terms=await $('//div[@class="timeline__inner"]/div[@class="timeline__item"]/span[@class="node secondDose"]/span[@class="vaccine-type" and text()="Pfizer"]')   //Pfizer
+            // const terms=await $('//div[@class="timeline__inner"]/div[@class="timeline__item"]/span[@class="node secondDose"]/span[@class="vaccine-type" and text()="Pfizer"]')   //Pfizer
             // const terms=await $('//div[@class="timeline__inner"]/div[@class="timeline__item"]/span[@class="node secondDose"]/span[@class="vaccine-type" and text()="AstraZeneca"]')     //AstraZeneca
             // const terms=await $('//div[@class="timeline__inner"]/div[@class="timeline__item"]/span[@class="node secondDose"]/span[@class="vaccine-type" and text()="Moderna"]')     //Moderna
-    
+           const terms=doseFilter==0?await $(`//div[@class="timeline__inner"]/div[@class="timeline__item"]/span[@class="node "]/span[@class="vaccine-type" and text()="${vaccineTerm}"]/preceding-sibling::span[@class="description" and text()="Wolny termin"]`):await $(`//div[@class="timeline__inner"]/div[@class="timeline__item"]/span[@class="node secondDose"]/span[@class="vaccine-type" and text()="${vaccineTerm}"]`)
+
            if(terms)await terms.click()
            await browser.pause(500)
 
@@ -171,26 +210,26 @@ describe('My login application', ()=>{
            const formInput=await $('form input')
            await formInput.click() //pesel
 
-           await browser.keys(item)
+           await browser.keys(item[0])
            await browser.pause(500)
            
            const buttonSzukaj=await $('//button[contains(text(),"Szukaj")]')
            await buttonSzukaj.click()
            await browser.pause(500)
            
-           const buttonWybierz=await $('//button[contains(text(),"Wybierz")]')
-           await buttonWybierz.click()
-           await browser.pause(500)
+        //    const buttonWybierz=await $('//button[contains(text(),"Wybierz")]')
+        //    await buttonWybierz.click()
+        //    await browser.pause(500)
            
-           const buttonPotwierdz=await $('//button[contains(text(),"Wybierz i potwierdź wizytę")]')
-           if(await buttonPotwierdz.isExisting()){
-                await buttonPotwierdz.click()
-                await browser.pause(500)
+        //    const buttonPotwierdz=await $('//button[contains(text(),"Wybierz i potwierdź wizytę")]')
+        //    if(await buttonPotwierdz.isExisting()){
+        //         await buttonPotwierdz.click()
+        //         await browser.pause(500)
            
-                const buttonTak=await $('//button[contains(text(),"Potwierdź")]')
-                await buttonTak.click()
-                await browser.pause(2500)
-           }
+        //         const buttonTak=await $('//button[contains(text(),"Potwierdź")]')
+        //         await buttonTak.click()
+        //         await browser.pause(2500)
+        //    }
            
            const grafikLink= await $('//button[contains(text(),"Grafik")]')
            await grafikLink.click()
